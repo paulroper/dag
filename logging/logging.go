@@ -1,28 +1,28 @@
-package log
+package logging
 
 import (
 	"fmt"
 	"time"
 )
 
-type Logging interface {
+type Logger interface {
 	LogDebug(message string)
 	LogError(message string)
 }
 
-type Logger struct {
+type Log struct {
 	Debug bool
 }
 
-func (logger Logger) LogDebug(message string) {
-	if !logger.Debug {
+func (log Log) LogDebug(message string) {
+	if !log.Debug {
 		return
 	}
 
 	fmt.Printf("%s%s\n", getPrefix(), message)
 }
 
-func (logger Logger) LogError(message string) {
+func (log Log) LogError(message string) {
 	fmt.Printf("%s%s\n", getPrefix(), message)
 }
 

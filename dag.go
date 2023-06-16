@@ -1,17 +1,22 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
 	"github.com/paulroper/dag/git"
-	"github.com/paulroper/dag/log"
+	"github.com/paulroper/dag/logging"
 
 	"github.com/urfave/cli/v2"
 )
 
-func dag(repositoryPath string) (string, error) {
-	var changedFiles = git.GetChangedFiles(repositoryPath)
+func dag(log logging.Logger, repo git.RepositoryInterrogator) (string, error) {
+	changedFiles, err := repo.GetChangedFiles()
+	if err != nil {
+		return "", errors.New("FAILED TO FETCH CHANGED FILES FROM REPO")
+	}
+
 	return fmt.Sprintf("Found %d files", len(changedFiles)), nil
 }
 
@@ -23,14 +28,16 @@ func main() {
 			debug := c.Bool("debug")
 			repositoryPath := c.String("repository")
 
-			logger := log.Logger{Debug: debug}
-			logger.LogDebug(
+			log := logging.Log{Debug: debug}
+			log.LogDebug(
 				fmt.Sprintf("Repository is %s", repositoryPath),
 			)
 
-			_, err := dag(repositoryPath)
+			repo := git.Repository{Log: log, RepositoryPath: repositoryPath}
+
+			_, err := dag(log, repo)
 			if err != nil {
-				logger.LogError("Oh no!")
+				os.Exit(1)
 			}
 
 			return nil
