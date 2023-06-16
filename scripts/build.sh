@@ -8,4 +8,4 @@ then
   tag="latest"
 fi
 
-docker build ./ -f Dockerfile -t dag:$tag
+docker build ./ -f Dockerfile -t dag:$tag --progress=plain
