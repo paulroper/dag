@@ -28,12 +28,20 @@ func main() {
 			debug := c.Bool("debug")
 			repositoryPath := c.String("repository")
 
+			baseBranch := c.String("baseBranch")
+			workingBranch := c.String("workingBranch")
+
 			log := logging.Log{Debug: debug}
 			log.LogDebug(
 				fmt.Sprintf("Repository is %s", repositoryPath),
 			)
 
-			repo := git.Repository{Log: log, RepositoryPath: repositoryPath}
+			repo := git.Repository{
+				BaseBranch:     baseBranch,
+				Log:            log,
+				RepositoryPath: repositoryPath,
+				WorkingBranch:  workingBranch,
+			}
 
 			_, err := dag(log, repo)
 			if err != nil {
@@ -54,6 +62,20 @@ func main() {
 				Required: true,
 				Value:    "",
 				Usage:    "path to repository to create dag for",
+			},
+
+			&cli.StringFlag{
+				Name:     "baseBranch",
+				Required: true,
+				Value:    "",
+				Usage:    "base branch to compare your changes to",
+			},
+
+			&cli.StringFlag{
+				Name:     "workingBranch",
+				Required: true,
+				Value:    "",
+				Usage:    "branch containing changes you want to build a dag for",
 			},
 		},
 	}
