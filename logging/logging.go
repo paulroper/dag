@@ -7,7 +7,7 @@ import (
 
 type Logger interface {
 	LogDebug(message string)
-	LogError(message string)
+	Log(message string)
 }
 
 type Log struct {
@@ -22,7 +22,7 @@ func (log Log) LogDebug(message string) {
 	fmt.Printf("%s%s\n", getPrefix(), message)
 }
 
-func (log Log) LogError(message string) {
+func (log Log) Log(message string) {
 	fmt.Printf("%s%s\n", getPrefix(), message)
 }
 

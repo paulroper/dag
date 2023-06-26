@@ -23,7 +23,7 @@ type Repository struct {
 func (repo Repository) GetChangedFiles() ([]string, error) {
 	r, err := git.PlainOpen(repo.RepositoryPath)
 	if err != nil {
-		repo.Log.LogError((fmt.Sprintf("Failed to open repo: %s", err)))
+		repo.Log.Log((fmt.Sprintf("Failed to open repo: %s", err)))
 		return []string{}, nil
 	}
 
@@ -33,7 +33,7 @@ func (repo Repository) GetChangedFiles() ([]string, error) {
 	)
 
 	if err != nil {
-		repo.Log.LogError((fmt.Sprintf("Failed to get HEAD ref for branch %s: %s", repo.WorkingBranch, err)))
+		repo.Log.Log((fmt.Sprintf("Failed to get HEAD ref for branch %s: %s", repo.WorkingBranch, err)))
 		return []string{}, nil
 	}
 
@@ -43,19 +43,19 @@ func (repo Repository) GetChangedFiles() ([]string, error) {
 	)
 
 	if err != nil {
-		repo.Log.LogError((fmt.Sprintf("Failed to get HEAD ref for branch %s: %s", repo.BaseBranch, err)))
+		repo.Log.Log((fmt.Sprintf("Failed to get HEAD ref for branch %s: %s", repo.BaseBranch, err)))
 		return []string{}, nil
 	}
 
 	workingBranchHeadCommit, _ := r.CommitObject(workingBranchHead.Hash())
 	if err != nil {
-		repo.Log.LogError((fmt.Sprintf("Failed to get HEAD commit for branch %s: %s", repo.WorkingBranch, err)))
+		repo.Log.Log((fmt.Sprintf("Failed to get HEAD commit for branch %s: %s", repo.WorkingBranch, err)))
 		return []string{}, nil
 	}
 
 	baseBranchHeadCommit, _ := r.CommitObject(baseBranchHead.Hash())
 	if err != nil {
-		repo.Log.LogError((fmt.Sprintf("Failed to get HEAD commit for branch %s: %s", repo.BaseBranch, err)))
+		repo.Log.Log((fmt.Sprintf("Failed to get HEAD commit for branch %s: %s", repo.BaseBranch, err)))
 		return []string{}, nil
 	}
 

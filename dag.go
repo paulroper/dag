@@ -4,20 +4,53 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 
+	"github.com/paulroper/dag/deps"
 	"github.com/paulroper/dag/git"
 	"github.com/paulroper/dag/logging"
+	"github.com/paulroper/dag/output"
 
 	"github.com/urfave/cli/v2"
 )
 
-func dag(log logging.Logger, repo git.RepositoryInterrogator) (string, error) {
+func dag(logger logging.Logger, repo git.RepositoryInterrogator) error {
+	// Step one - Pull all the file changes on this branch from Git
 	changedFiles, err := repo.GetChangedFiles()
 	if err != nil {
-		return "", errors.New("FAILED TO FETCH CHANGED FILES FROM REPO")
+		return errors.New("FAILED TO FETCH CHANGED FILES FROM REPO")
 	}
 
-	return fmt.Sprintf("Found %d files", len(changedFiles)), nil
+	// Step two - Filter the changes to code in apps or libs
+	// TODO: The paths to check can be moved into config
+	filteredFiles := []string{}
+	for _, changedFile := range changedFiles {
+		if strings.HasPrefix(changedFile, "apps/") || strings.HasPrefix(changedFile, "libs/") {
+			filteredFiles = append(filteredFiles, changedFile)
+		}
+	}
+
+	// Step three - Load all the deps files in the repo so we have a full list of modules and their deps
+	depsMap, err := deps.GetDepsMap(filteredFiles)
+	if err != nil {
+		return errors.New("FAILED TO LOAD DEPS MAP")
+	}
+
+	logger.LogDebug(fmt.Sprintf("Deps map is %v", depsMap))
+
+	// Step four - Work out what we need to build
+	modulesToBuild, err := deps.GetModulesToBuild(filteredFiles, depsMap)
+	if err != nil {
+		return errors.New("FAILED TO LOAD BUILD MAP")
+	}
+
+	logger.LogDebug(fmt.Sprintf("Modules to build are %v", modulesToBuild))
+	logger.Log(fmt.Sprintf("Found %d modules to build", len(modulesToBuild)))
+
+	// Step five - Write the build list to a file
+	output.WriteToFile(modulesToBuild)
+
+	return nil
 }
 
 func main() {
@@ -43,7 +76,7 @@ func main() {
 				WorkingBranch:  workingBranch,
 			}
 
-			_, err := dag(log, repo)
+			err := dag(log, repo)
 			if err != nil {
 				os.Exit(1)
 			}
